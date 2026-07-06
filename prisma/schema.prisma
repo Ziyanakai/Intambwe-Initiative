@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PARENT
+  DOCTOR
+}
+
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  children    Child[]
+  diagnoses   Diagnosis[]
+}
+
+model Child {
+  id          String   @id @default(cuid())
+  name        String
+  dateOfBirth DateTime
+  parentId    String
+  createdAt   DateTime @default(now())
+
+  parent      User        @relation(fields: [parentId], references: [id])
+  screenings  Screening[]
+  diagnoses   Diagnosis[]
+  therapyLogs TherapyLog[]
+}
+
+model Screening {
+  id        String    @id @default(cuid())
+  childId   String
+  answers   Json
+  riskLevel RiskLevel
+  createdAt DateTime  @default(now())
+
+  child     Child     @relation(fields: [childId], references: [id])
+}
+
+model Diagnosis {
+  id        String   @id @default(cuid())
+  childId   String
+  doctorId  String
+  severity  String
+  notes     String
+  carePlan  Json
+  createdAt DateTime @default(now())
+
+  child     Child    @relation(fields: [childId], references: [id])
+  doctor    User     @relation(fields: [doctorId], references: [id])
+}
+
+model TherapyLog {
+  id           String   @id @default(cuid())
+  childId      String
+  exerciseType String
+  completedAt  DateTime @default(now())
+  notes        String?
+
+  child        Child    @relation(fields: [childId], references: [id])
+}
