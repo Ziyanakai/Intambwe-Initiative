@@ -27,7 +27,7 @@ router.get('/:childId/today', requireRole('PARENT'), async (req: AuthRequest, re
     where: { childId, completedAt: { gte: today } },
     select: { exerciseType: true },
   })
-  const completedIds = completedToday.map((l) => l.exerciseType)
+  const completedIds = completedToday.map((l: { exerciseType: string }) => l.exerciseType)
   const activities = DEFAULT_ACTIVITIES.map((a) => ({ ...a, completed: completedIds.includes(a.id) }))
   res.json(activities)
 })
