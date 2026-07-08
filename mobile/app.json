@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Intambwe",
+    "slug": "intambwe",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "26c8aeb9-9d5c-4abc-b89b-51df92c8d41b"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/26c8aeb9-9d5c-4abc-b89b-51df92c8d41b"
+    },
+    "android": {}
+  }
+}
