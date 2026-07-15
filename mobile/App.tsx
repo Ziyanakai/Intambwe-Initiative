@@ -21,6 +21,7 @@ import { ReferralsScreen }   from './src/screens/doctor/ReferralsScreen'
 import { CasesScreen }       from './src/screens/doctor/CasesScreen'
 import StedScreeningScreen   from './src/screens/doctor/StedScreeningScreen'
 import StedResultScreen      from './src/screens/doctor/StedResultScreen'
+import DiagnosisScreen       from './src/screens/doctor/DiagnosisScreen'
 
 const Stack = createNativeStackNavigator()
 const Tab   = createBottomTabNavigator()
@@ -88,6 +89,7 @@ function DoctorTabs() {
       <Stack.Screen name="DoctorTabBar"   component={DoctorTabBar} />
       <Stack.Screen name="StedScreening"  component={StedScreeningScreen} />
       <Stack.Screen name="StedResult"     component={StedResultScreen} />
+      <Stack.Screen name="Diagnosis"      component={DiagnosisScreen} />
     </Stack.Navigator>
   )
 }

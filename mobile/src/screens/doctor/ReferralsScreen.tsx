@@ -1,6 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
 
@@ -16,6 +18,8 @@ const riskLabel = { high: 'High Risk', mod: 'Moderate', low: 'Low Risk' }
 const riskTint  = { high: '#FEF0EE', mod: '#FEF9EC', low: colors.green50 }
 
 export function ReferralsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>()
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -23,7 +27,14 @@ export function ReferralsScreen() {
         <Text style={styles.sub}>Children awaiting your review</Text>
 
         {REFERRALS.map((r) => (
-          <TouchableOpacity key={r.id} activeOpacity={0.85}>
+          <TouchableOpacity
+            key={r.id}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('Diagnosis', {
+              childId: r.id,
+              childName: r.name,
+            })}
+          >
             <Card pad={15} style={styles.card}>
               <View style={styles.row}>
                 <View style={[styles.avatar, { backgroundColor: riskTint[r.risk as keyof typeof riskTint] }]}>
