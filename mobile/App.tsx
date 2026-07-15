@@ -19,6 +19,8 @@ import { ProgressScreen }    from './src/screens/parent/ProgressScreen'
 import { PlanScreen }        from './src/screens/parent/PlanScreen'
 import { ReferralsScreen }   from './src/screens/doctor/ReferralsScreen'
 import { CasesScreen }       from './src/screens/doctor/CasesScreen'
+import StedScreeningScreen   from './src/screens/doctor/StedScreeningScreen'
+import StedResultScreen      from './src/screens/doctor/StedResultScreen'
 
 const Stack = createNativeStackNavigator()
 const Tab   = createBottomTabNavigator()
@@ -53,7 +55,7 @@ function ParentTabs() {
   )
 }
 
-function DoctorTabs() {
+function DoctorTabBar() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -68,14 +70,25 @@ function DoctorTabs() {
         tabBarInactiveTintColor: colors.ink3,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         tabBarIcon: ({ color }) => {
-          const icons: Record<string, string> = { Referrals: '📋', Cases: '👶' }
+          const icons: Record<string, string> = { Referrals: '📋', Cases: '👶', Screen: '🔍' }
           return <Text style={{ fontSize: 20 }}>{icons[route.name]}</Text>
         },
       })}
     >
-      <Tab.Screen name="Referrals" component={ReferralsScreen} />
-      <Tab.Screen name="Cases"     component={CasesScreen} />
+      <Tab.Screen name="Referrals"     component={ReferralsScreen} />
+      <Tab.Screen name="Cases"         component={CasesScreen} />
+      <Tab.Screen name="Screen"        component={StedScreeningScreen} options={{ title: 'STED Screen' }} />
     </Tab.Navigator>
+  )
+}
+
+function DoctorTabs() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="DoctorTabBar"   component={DoctorTabBar} />
+      <Stack.Screen name="StedScreening"  component={StedScreeningScreen} />
+      <Stack.Screen name="StedResult"     component={StedResultScreen} />
+    </Stack.Navigator>
   )
 }
 
