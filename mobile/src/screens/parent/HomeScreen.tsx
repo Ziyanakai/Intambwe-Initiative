@@ -47,6 +47,12 @@ export function HomeScreen({ navigation }: any) {
                 <Text style={styles.stageChipText}>Stage 2/4</Text>
               </View>
             </View>
+            <TouchableOpacity
+              style={styles.addChildBtn}
+              onPress={() => navigation.navigate('AddChild')}
+            >
+              <Text style={styles.addChildBtnText}>+ Add a child</Text>
+            </TouchableOpacity>
           </Card>
         </View>
 
@@ -162,4 +168,10 @@ const styles = StyleSheet.create({
   feedbackDoc: { fontSize: 13, fontWeight: '700', color: colors.ink, flex: 1 },
   feedbackWhen: { fontSize: 11.5, color: colors.ink3 },
   feedbackText: { fontSize: 14.5, lineHeight: 22, color: colors.ink },
+  addChildBtn: {
+    marginTop: 12, paddingVertical: 10, borderRadius: 10,
+    borderWidth: 1.5, borderColor: colors.green600,
+    alignItems: 'center', borderStyle: 'dashed',
+  },
+  addChildBtnText: { fontSize: 13.5, fontWeight: '700', color: colors.green600 },
 })

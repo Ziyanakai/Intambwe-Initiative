@@ -22,11 +22,12 @@ import { CasesScreen }       from './src/screens/doctor/CasesScreen'
 import StedScreeningScreen   from './src/screens/doctor/StedScreeningScreen'
 import StedResultScreen      from './src/screens/doctor/StedResultScreen'
 import DiagnosisScreen       from './src/screens/doctor/DiagnosisScreen'
+import AddChildScreen        from './src/screens/parent/AddChildScreen'
 
 const Stack = createNativeStackNavigator()
 const Tab   = createBottomTabNavigator()
 
-function ParentTabs() {
+function ParentTabBar() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -53,6 +54,15 @@ function ParentTabs() {
       <Tab.Screen name="Progress"   component={ProgressScreen} />
       <Tab.Screen name="Plan"       component={PlanScreen} />
     </Tab.Navigator>
+  )
+}
+
+function ParentTabs() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ParentTabBar" component={ParentTabBar} />
+      <Stack.Screen name="AddChild"     component={AddChildScreen} />
+    </Stack.Navigator>
   )
 }
 
