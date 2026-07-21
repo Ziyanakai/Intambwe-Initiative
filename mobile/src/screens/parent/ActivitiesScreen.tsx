@@ -1,51 +1,140 @@
-import React, { useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
+import api from '../../api/client'
 
-const ACTIVITIES = [
-  { id: 'a1', title: 'Name & Point',     domain: 'comm',   domainLabel: 'Communication',  color: colors.comm,   tint: colors.commTint,   goal: 'Build first words by naming everyday objects', duration: '10 min', done: false },
-  { id: 'a2', title: 'Mirror Faces',     domain: 'emot',   domainLabel: 'Emotion',         color: colors.emot,   tint: colors.emotTint,   goal: 'Recognise and copy simple emotions',           duration: '8 min',  done: false },
-  { id: 'a3', title: 'Stacking Cups',    domain: 'motor',  domainLabel: 'Motor Skills',    color: colors.motor,  tint: colors.motorTint,  goal: 'Strengthen grasp and hand control',            duration: '12 min', done: true  },
-  { id: 'a4', title: 'Turn-Taking Game', domain: 'social', domainLabel: 'Social',          color: colors.social, tint: colors.socialTint, goal: 'Practise waiting and sharing with a partner',  duration: '10 min', done: false },
-]
+const DOMAIN_META: Record<string, { icon: string; label: string; color: string; tint: string; duration: string; verb: string }> = {
+  communication: { icon: '💬', label: 'Communication', color: colors.comm,   tint: colors.commTint,   duration: '10 min', verb: 'Practise talking' },
+  social:        { icon: '🤝', label: 'Social',        color: colors.social, tint: colors.socialTint, duration: '10 min', verb: 'Play together' },
+  motor:         { icon: '🤲', label: 'Motor Skills',  color: colors.motor,  tint: colors.motorTint,  duration: '12 min', verb: 'Move & grip' },
+  cognitive:     { icon: '🧠', label: 'Thinking',      color: colors.cog,    tint: colors.cogTint,    duration: '10 min', verb: 'Explore & discover' },
+  emotional:     { icon: '😊', label: 'Emotion',       color: colors.emot,   tint: colors.emotTint,   duration: '8 min',  verb: 'Feel & express' },
+}
+
+interface Activity {
+  id: string
+  title: string
+  domainKey: string
+  goal: string
+  done: boolean
+}
+
+function goalsToActivities(goals: Record<string, string>): Activity[] {
+  return Object.entries(goals).map(([domain, goal]) => ({
+    id: domain,
+    title: DOMAIN_META[domain]?.verb ?? domain,
+    domainKey: domain,
+    goal,
+    done: false,
+  }))
+}
 
 export function ActivitiesScreen() {
-  const [acts, setActs] = useState(ACTIVITIES)
+  const [acts, setActs] = useState<Activity[]>([])
+  const [childName, setChildName] = useState('your child')
+  const [loading, setLoading] = useState(true)
+  const [emptyReason, setEmptyReason] = useState<'no-child' | 'no-diagnosis' | 'failed' | null>(null)
+
+  useEffect(() => { load() }, [])
+
+  async function load() {
+    setLoading(true)
+    setEmptyReason(null)
+    try {
+      const childRes = await api.get('/children')
+      const children = childRes.data
+      if (!children?.length) { setEmptyReason('no-child'); return }
+      const child = children[0]
+      setChildName(child.name ?? 'your child')
+
+      const diagRes = await api.get(`/doctor/diagnosis/${child.id}`)
+      const diagnoses = diagRes.data
+      if (!diagnoses?.length) { setEmptyReason('no-diagnosis'); return }
+
+      const goals: Record<string, string> = diagnoses[0]?.carePlan?.goals ?? {}
+      if (!Object.keys(goals).length) { setEmptyReason('no-diagnosis'); return }
+
+      setActs(goalsToActivities(goals))
+    } catch {
+      setEmptyReason('failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const toggle = (id: string) =>
+    setActs(prev => prev.map(a => a.id === id ? { ...a, done: !a.done } : a))
+
   const todo = acts.filter(a => !a.done)
   const done = acts.filter(a => a.done)
 
-  const toggle = (id: string) => setActs(acts.map(a => a.id === id ? { ...a, done: !a.done } : a))
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.green600} size="large" />
+          <Text style={styles.loadingText}>Loading activities…</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
-  const ActivityRow = ({ act }: { act: typeof ACTIVITIES[0] }) => (
-    <Card pad={14} style={styles.actRow}>
-      <View style={styles.actRowInner}>
-        <View style={[styles.domainBadge, { backgroundColor: act.tint }]}>
-          <Text style={{ fontSize: 20 }}>
-            {act.domain === 'comm' ? '💬' : act.domain === 'emot' ? '😊' : act.domain === 'motor' ? '🤲' : '🤝'}
-          </Text>
-        </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[styles.actTitle, act.done && styles.actDone]}>{act.title}</Text>
-          <View style={styles.actMeta}>
-            <Text style={[styles.actDomain, { color: act.color }]}>{act.domainLabel}</Text>
-            <View style={styles.dot} />
-            <Text style={styles.actDuration}>{act.duration}</Text>
+  if (emptyReason) {
+    const msg =
+      emptyReason === 'no-child'
+        ? { icon: '👶', title: 'No child registered', sub: 'Add your child's profile from the Home screen to get started.' }
+        : emptyReason === 'no-diagnosis'
+        ? { icon: '⏳', title: 'Awaiting care plan', sub: 'Once your specialist completes the assessment, daily activities will appear here.' }
+        : { icon: '⚠️', title: 'Could not load', sub: 'Check your connection and pull down to refresh.' }
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.heading}>Activities</Text>
+          <Text style={styles.sub}>Assigned by your specialist</Text>
+          <Card pad={28} style={styles.emptyCard}>
+            <Text style={styles.emptyIcon}>{msg.icon}</Text>
+            <Text style={styles.emptyTitle}>{msg.title}</Text>
+            <Text style={styles.emptySub}>{msg.sub}</Text>
+          </Card>
+        </ScrollView>
+      </SafeAreaView>
+    )
+  }
+
+  const ActivityRow = ({ act }: { act: Activity }) => {
+    const meta = DOMAIN_META[act.domainKey] ?? { icon: '🎯', label: act.domainKey, color: colors.green600, tint: colors.green100, duration: '10 min' }
+    return (
+      <Card pad={14} style={styles.actRow}>
+        <View style={styles.actRowInner}>
+          <View style={[styles.domainBadge, { backgroundColor: meta.tint }]}>
+            <Text style={{ fontSize: 20 }}>{meta.icon}</Text>
           </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={[styles.actTitle, act.done && styles.actDone]}>{act.title}</Text>
+            <Text style={styles.actGoal} numberOfLines={2}>{act.goal}</Text>
+            <View style={styles.actMeta}>
+              <Text style={[styles.actDomain, { color: meta.color }]}>{meta.label}</Text>
+              <View style={styles.dot} />
+              <Text style={styles.actDuration}>{meta.duration}</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => toggle(act.id)}
+            style={[styles.checkBtn, act.done && styles.checkBtnDone]}
+          >
+            {act.done
+              ? <Text style={{ fontSize: 14, color: colors.white }}>✓</Text>
+              : <Text style={{ fontSize: 12, color: colors.green600 }}>▶</Text>
+            }
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => toggle(act.id)}
-          style={[styles.checkBtn, act.done && styles.checkBtnDone]}
-        >
-          {act.done
-            ? <Text style={{ fontSize: 14, color: colors.white }}>✓</Text>
-            : <Text style={{ fontSize: 12, color: colors.green600 }}>▶</Text>
-          }
-        </TouchableOpacity>
-      </View>
-    </Card>
-  )
+      </Card>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -53,7 +142,6 @@ export function ActivitiesScreen() {
         <Text style={styles.heading}>Activities</Text>
         <Text style={styles.sub}>Assigned by your specialist</Text>
 
-        {/* Progress ring summary */}
         <Card pad={16} style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <View style={styles.ring}>
@@ -61,7 +149,9 @@ export function ActivitiesScreen() {
             </View>
             <View>
               <Text style={styles.summaryTitle}>{done.length === acts.length ? 'All done today! 🎉' : 'Keep going'}</Text>
-              <Text style={styles.summarySub}>{todo.length} activit{todo.length === 1 ? 'y' : 'ies'} left for Keza today</Text>
+              <Text style={styles.summarySub}>
+                {todo.length} activit{todo.length === 1 ? 'y' : 'ies'} left for {childName} today
+              </Text>
             </View>
           </View>
         </Card>
@@ -87,8 +177,14 @@ export function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   content: { padding: 18, paddingBottom: 32, gap: 8 },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  loadingText: { marginTop: 12, color: colors.ink2, fontSize: 14 },
   heading: { fontSize: 24, fontWeight: '800', color: colors.ink, letterSpacing: -0.5 },
   sub: { fontSize: 13.5, color: colors.ink2, marginBottom: 12 },
+  emptyCard: { alignItems: 'center' },
+  emptyIcon: { fontSize: 44, marginBottom: 12 },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.ink, textAlign: 'center', marginBottom: 6 },
+  emptySub: { fontSize: 13, color: colors.ink2, textAlign: 'center', lineHeight: 20 },
   summaryCard: { backgroundColor: colors.green100, shadowOpacity: 0, marginBottom: 8 },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   ring: {
@@ -106,7 +202,8 @@ const styles = StyleSheet.create({
   domainBadge: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   actTitle: { fontSize: 15.5, fontWeight: '700', letterSpacing: -0.2, color: colors.ink },
   actDone: { textDecorationLine: 'line-through', opacity: 0.5 },
-  actMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
+  actGoal: { fontSize: 12, color: colors.ink2, lineHeight: 17, marginTop: 2 },
+  actMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   actDomain: { fontSize: 12, fontWeight: '600' },
   dot: { width: 3, height: 3, borderRadius: 99, backgroundColor: colors.ink4 },
   actDuration: { fontSize: 12, color: colors.ink3 },
