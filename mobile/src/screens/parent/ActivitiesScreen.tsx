@@ -60,7 +60,16 @@ export function ActivitiesScreen() {
       const goals: Record<string, string> = diagnoses[0]?.carePlan?.goals ?? {}
       if (!Object.keys(goals).length) { setEmptyReason('no-diagnosis'); return }
 
-      setActs(goalsToActivities(goals))
+      const logRes = await api.get(`/children/${child.id}/activity-log`)
+      const logs: { exerciseType: string; completedAt: string }[] = logRes.data ?? []
+      const today = new Date().toDateString()
+      const doneToday = new Set(
+        logs
+          .filter(l => new Date(l.completedAt).toDateString() === today)
+          .map(l => l.exerciseType)
+      )
+
+      setActs(goalsToActivities(goals).map(a => ({ ...a, done: doneToday.has(a.id) })))
     } catch {
       setEmptyReason('failed')
     } finally {
