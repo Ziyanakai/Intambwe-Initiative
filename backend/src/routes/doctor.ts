@@ -11,10 +11,31 @@ router.get('/referrals', async (_req: AuthRequest, res: Response) => {
     where: { riskLevel: { in: ['MODERATE', 'HIGH'] } },
     orderBy: { createdAt: 'desc' },
     include: {
-      child: { select: { id: true, name: true, dateOfBirth: true } },
+      child: {
+        select: {
+          id: true, name: true, dateOfBirth: true,
+          parent: { select: { email: true } },
+        },
+      },
     },
   })
   res.json(referrals)
+})
+
+router.get('/cases', async (_req: AuthRequest, res: Response) => {
+  const diagnoses = await prisma.diagnosis.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      child: {
+        select: {
+          id: true, name: true, dateOfBirth: true,
+          parent: { select: { email: true } },
+        },
+      },
+      doctor: { select: { email: true } },
+    },
+  })
+  res.json(diagnoses)
 })
 
 router.get('/referrals/:childId', async (req: AuthRequest, res: Response) => {

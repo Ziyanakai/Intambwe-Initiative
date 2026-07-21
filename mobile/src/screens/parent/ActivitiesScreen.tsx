@@ -36,6 +36,7 @@ function goalsToActivities(goals: Record<string, string>): Activity[] {
 export function ActivitiesScreen() {
   const [acts, setActs] = useState<Activity[]>([])
   const [childName, setChildName] = useState('your child')
+  const [childId, setChildId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [emptyReason, setEmptyReason] = useState<'no-child' | 'no-diagnosis' | 'failed' | null>(null)
 
@@ -50,6 +51,7 @@ export function ActivitiesScreen() {
       if (!children?.length) { setEmptyReason('no-child'); return }
       const child = children[0]
       setChildName(child.name ?? 'your child')
+      setChildId(child.id)
 
       const diagRes = await api.get(`/doctor/diagnosis/${child.id}`)
       const diagnoses = diagRes.data
@@ -66,8 +68,19 @@ export function ActivitiesScreen() {
     }
   }
 
-  const toggle = (id: string) =>
-    setActs(prev => prev.map(a => a.id === id ? { ...a, done: !a.done } : a))
+  async function toggle(id: string) {
+    const act = acts.find(a => a.id === id)
+    if (!act) return
+    const nowDone = !act.done
+    setActs(prev => prev.map(a => a.id === id ? { ...a, done: nowDone } : a))
+    if (nowDone && childId) {
+      try {
+        await api.post(`/children/${childId}/activity-log`, { exerciseType: id })
+      } catch {
+        // non-blocking — local state already updated
+      }
+    }
+  }
 
   const todo = acts.filter(a => !a.done)
   const done = acts.filter(a => a.done)
