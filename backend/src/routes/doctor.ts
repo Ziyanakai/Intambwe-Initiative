@@ -6,6 +6,39 @@ const router = Router()
 
 router.use(authenticate, requireRole('DOCTOR'))
 
+router.get('/children', async (_req: AuthRequest, res: Response) => {
+  const children = await prisma.child.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true, name: true, dateOfBirth: true,
+      parent: { select: { email: true } },
+      screenings: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
+  })
+  res.json(children)
+})
+
+router.post('/screen', async (req: AuthRequest, res: Response) => {
+  const { childId, answers } = req.body
+  if (!childId || !answers) {
+    res.status(400).json({ error: 'childId and answers are required' })
+    return
+  }
+  const child = await prisma.child.findUnique({ where: { id: childId } })
+  if (!child) { res.status(404).json({ error: 'Child not found' }); return }
+
+  function calculateRisk(ans: Record<string, boolean>) {
+    const flagged = Object.values(ans).filter(v => v === false).length
+    if (flagged >= 4) return 'HIGH'
+    if (flagged >= 2) return 'MODERATE'
+    return 'LOW'
+  }
+
+  const riskLevel = calculateRisk(answers) as 'LOW' | 'MODERATE' | 'HIGH'
+  const screening = await prisma.screening.create({ data: { childId, answers, riskLevel } })
+  res.status(201).json(screening)
+})
+
 router.get('/referrals', async (_req: AuthRequest, res: Response) => {
   const referrals = await prisma.screening.findMany({
     where: { riskLevel: { in: ['MODERATE', 'HIGH'] } },

@@ -10,7 +10,8 @@ type Props = {
 }
 
 export default function StedResultScreen({ navigation, route }: Props) {
-  const { childName, ageLabel, stedPart, totalQuestions, noCount, refer } = route.params as {
+  const { childId, childName, ageLabel, stedPart, totalQuestions, noCount, refer } = route.params as {
+    childId: string
     childName: string
     ageLabel: string
     stedPart: string
@@ -75,11 +76,20 @@ export default function StedResultScreen({ navigation, route }: Props) {
         </View>
 
         {/* Buttons */}
+        {refer && (
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() => navigation.navigate('Diagnosis', { childId, childName })}
+          >
+            <Text style={styles.primaryBtnText}>Diagnose This Child →</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={() => navigation.navigate('StedScreening')}
+          style={refer ? styles.secondaryBtn : styles.primaryBtn}
+          onPress={() => navigation.navigate('DoctorTabBar')}
         >
-          <Text style={styles.primaryBtnText}>Screen Another Child</Text>
+          <Text style={refer ? styles.secondaryBtnText : styles.primaryBtnText}>Screen Another Child</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

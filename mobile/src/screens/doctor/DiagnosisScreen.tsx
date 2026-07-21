@@ -40,6 +40,7 @@ export default function DiagnosisScreen({ navigation, route }: Props) {
   }
 
   async function handleSubmit() {
+    if (!childId) { Alert.alert('Error', 'No child selected. Please go back and select a child.'); return }
     if (!severity) { Alert.alert('Required', 'Please select a severity level.'); return }
     if (!notes.trim()) { Alert.alert('Required', 'Please add your clinical notes.'); return }
     const filledGoals = Object.entries(goals).filter(([, v]) => v.trim())
@@ -48,7 +49,7 @@ export default function DiagnosisScreen({ navigation, route }: Props) {
     setSaving(true)
     try {
       await api.post('/doctor/diagnosis', {
-        childId: childId ?? 'unknown',
+        childId,
         severity,
         notes,
         carePlan: { goals: Object.fromEntries(filledGoals) },

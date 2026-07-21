@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useCallback } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '../../components/Card'
@@ -40,7 +41,7 @@ export function HomeScreen({ navigation }: any) {
   const [diagnosis, setDiagnosis] = useState<{ severity: string; doctor: { email: string } } | null>(null)
   const [loadingChild, setLoadingChild] = useState(true)
 
-  useEffect(() => { loadData() }, [])
+  useFocusEffect(useCallback(() => { loadData() }, []))
 
   async function loadData() {
     try {
