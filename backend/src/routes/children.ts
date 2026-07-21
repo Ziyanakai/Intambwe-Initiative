@@ -46,4 +46,23 @@ router.get('/:id/activity-log', requireRole('PARENT', 'DOCTOR'), async (req: Aut
   res.json(logs)
 })
 
+router.delete('/:id/activity-log/:domain', requireRole('PARENT'), async (req: AuthRequest, res: Response) => {
+  const child = await prisma.child.findFirst({ where: { id: req.params['id'], parentId: req.user!.id } })
+  if (!child) { res.status(404).json({ error: 'Child not found' }); return }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const log = await prisma.therapyLog.findFirst({
+    where: {
+      childId: child.id,
+      exerciseType: req.params['domain'],
+      completedAt: { gte: today },
+    },
+    orderBy: { completedAt: 'desc' },
+  })
+  if (log) await prisma.therapyLog.delete({ where: { id: log.id } })
+  res.json({ ok: true })
+})
+
 export default router

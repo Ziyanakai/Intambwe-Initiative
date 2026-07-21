@@ -79,15 +79,17 @@ export function ActivitiesScreen() {
 
   async function toggle(id: string) {
     const act = acts.find(a => a.id === id)
-    if (!act) return
+    if (!act || !childId) return
     const nowDone = !act.done
     setActs(prev => prev.map(a => a.id === id ? { ...a, done: nowDone } : a))
-    if (nowDone && childId) {
-      try {
+    try {
+      if (nowDone) {
         await api.post(`/children/${childId}/activity-log`, { exerciseType: id })
-      } catch {
-        // non-blocking — local state already updated
+      } else {
+        await api.delete(`/children/${childId}/activity-log/${id}`)
       }
+    } catch {
+      // non-blocking — local state already updated
     }
   }
 

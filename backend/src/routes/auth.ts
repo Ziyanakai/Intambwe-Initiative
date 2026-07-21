@@ -11,6 +11,14 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'email, password and role are required' })
     return
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: 'Please enter a valid email address' })
+    return
+  }
+  if (password.length < 6) {
+    res.status(400).json({ error: 'Password must be at least 6 characters' })
+    return
+  }
   if (!['PARENT', 'DOCTOR'].includes(role)) {
     res.status(400).json({ error: 'role must be PARENT or DOCTOR' })
     return

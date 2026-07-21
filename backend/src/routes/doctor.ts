@@ -91,9 +91,18 @@ router.post('/diagnosis', async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: 'childId, severity, notes and carePlan are required' })
     return
   }
-  const diagnosis = await prisma.diagnosis.create({
-    data: { childId, doctorId: req.user!.id, severity, notes, carePlan },
-  })
+  const existing = await prisma.diagnosis.findFirst({ where: { childId, doctorId: req.user!.id } })
+  let diagnosis
+  if (existing) {
+    diagnosis = await prisma.diagnosis.update({
+      where: { id: existing.id },
+      data: { severity, notes, carePlan },
+    })
+  } else {
+    diagnosis = await prisma.diagnosis.create({
+      data: { childId, doctorId: req.user!.id, severity, notes, carePlan },
+    })
+  }
   res.status(201).json(diagnosis)
 })
 

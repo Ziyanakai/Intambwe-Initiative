@@ -17,7 +17,8 @@ export function RegisterScreen({ navigation, route }: Props) {
 
   const register = async () => {
     if (!email || !password) { Alert.alert('Please fill in all fields'); return }
-    if (password.length < 6) { Alert.alert('Password must be at least 6 characters'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { Alert.alert('Invalid email', 'Please enter a valid email address.'); return }
+    if (password.length < 6) { Alert.alert('Password too short', 'Password must be at least 6 characters.'); return }
     setLoading(true)
     try {
       const { data } = await api.post('/auth/register', { email, password, role })

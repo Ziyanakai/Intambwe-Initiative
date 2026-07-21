@@ -114,12 +114,14 @@ export function HomeScreen({ navigation }: any) {
                 <Text style={styles.noChildText}>No child registered yet</Text>
               </View>
             )}
-            <TouchableOpacity
-              style={styles.addChildBtn}
-              onPress={() => navigation.navigate('AddChild')}
-            >
-              <Text style={styles.addChildBtnText}>+ Add a child</Text>
-            </TouchableOpacity>
+            {!child && (
+              <TouchableOpacity
+                style={styles.addChildBtn}
+                onPress={() => navigation.navigate('AddChild')}
+              >
+                <Text style={styles.addChildBtnText}>+ Add a child</Text>
+              </TouchableOpacity>
+            )}
           </Card>
         </View>
 
