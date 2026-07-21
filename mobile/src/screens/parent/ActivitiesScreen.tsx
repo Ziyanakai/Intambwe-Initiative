@@ -86,7 +86,7 @@ export function ActivitiesScreen() {
   if (emptyReason) {
     const msg =
       emptyReason === 'no-child'
-        ? { icon: '👶', title: 'No child registered', sub: 'Add your child's profile from the Home screen to get started.' }
+        ? { icon: '👶', title: 'No child registered', sub: "Add your child's profile from the Home screen to get started." }
         : emptyReason === 'no-diagnosis'
         ? { icon: '⏳', title: 'Awaiting care plan', sub: 'Once your specialist completes the assessment, daily activities will appear here.' }
         : { icon: '⚠️', title: 'Could not load', sub: 'Check your connection and pull down to refresh.' }
