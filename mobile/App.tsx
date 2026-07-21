@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Text } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { LangProvider } from './src/i18n/LangContext'
 
 import { useAuthStore } from './src/store/useAuthStore'
 import { colors } from './src/theme/colors'
@@ -124,6 +125,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <LangProvider>
       <NavigationContainer>
         {!user
           ? <AuthStack />
@@ -132,6 +134,7 @@ export default function App() {
             : <DoctorTabs />
         }
       </NavigationContainer>
+      </LangProvider>
     </SafeAreaProvider>
   )
 }

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
 import { useAuthStore } from '../../store/useAuthStore'
+import { useLang } from '../../i18n/LangContext'
 import api from '../../api/client'
 
 const QUICK_ACTIONS = [
@@ -35,6 +36,7 @@ function childInitials(name: string): string {
 export function HomeScreen({ navigation }: any) {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const { t, lang, toggleLang } = useLang()
   const firstName = user?.email?.split('@')[0] ?? 'Parent'
 
   const [child, setChild] = useState<Child | null>(null)
@@ -76,13 +78,13 @@ export function HomeScreen({ navigation }: any) {
         {/* Green hero header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Good morning,</Text>
+            <Text style={styles.greeting}>{t.goodMorning}</Text>
             <Text style={styles.name}>{firstName}</Text>
           </View>
           <View style={styles.headerRight}>
-            <View style={styles.bellBtn}>
-              <Text style={{ fontSize: 20 }}>🔔</Text>
-            </View>
+            <TouchableOpacity style={styles.bellBtn} onPress={toggleLang}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: '#fff' }}>{lang === 'en' ? 'RW' : 'EN'}</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.bellBtn} onPress={confirmLogout}>
               <Text style={{ fontSize: 20 }}>🚪</Text>
             </TouchableOpacity>
@@ -111,7 +113,7 @@ export function HomeScreen({ navigation }: any) {
               </View>
             ) : (
               <View>
-                <Text style={styles.noChildText}>No child registered yet</Text>
+                <Text style={styles.noChildText}>{t.noChildYet}</Text>
               </View>
             )}
             {!child && (
@@ -119,7 +121,7 @@ export function HomeScreen({ navigation }: any) {
                 style={styles.addChildBtn}
                 onPress={() => navigation.navigate('AddChild')}
               >
-                <Text style={styles.addChildBtnText}>+ Add a child</Text>
+                <Text style={styles.addChildBtnText}>{t.addChild}</Text>
               </TouchableOpacity>
             )}
           </Card>
@@ -129,12 +131,12 @@ export function HomeScreen({ navigation }: any) {
           {/* Journey — shown only when child + diagnosis exist */}
           {child && diagnosis && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{child.name}'s journey</Text>
+              <Text style={styles.sectionTitle}>{child.name}{t.journey}</Text>
               <Card pad={16}>
                 <Text style={styles.stageName}>
                   {diagnosis.severity === 'Mild' ? 'Building Foundations' : diagnosis.severity === 'Moderate' ? 'Making Connections' : 'Intensive Support'}
                 </Text>
-                <Text style={styles.stageNote}>Every small step counts.</Text>
+                <Text style={styles.stageNote}>{t.everyStepCounts}</Text>
                 <View style={styles.stagePath}>
                   {['Start', 'Foundations', 'Connecting', 'Flourishing'].map((s, i) => (
                     <View key={s} style={styles.stageStep}>
@@ -151,7 +153,7 @@ export function HomeScreen({ navigation }: any) {
 
           {/* Quick actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick actions</Text>
+            <Text style={styles.sectionTitle}>{t.quickActions}</Text>
             <Card pad={16}>
               <View style={styles.quickActions}>
                 {QUICK_ACTIONS.map((a) => (
@@ -169,7 +171,7 @@ export function HomeScreen({ navigation }: any) {
           {/* Specialist notes — shown when diagnosis exists */}
           {diagnosis && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>From your specialist</Text>
+              <Text style={styles.sectionTitle}>{t.fromSpecialist}</Text>
               <Card pad={16} style={styles.feedbackCard}>
                 <View style={styles.feedbackHeader}>
                   <View style={[styles.avatar, { width: 32, height: 32, borderRadius: 999 }]}>

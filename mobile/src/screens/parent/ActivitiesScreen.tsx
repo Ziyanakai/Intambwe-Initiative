@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
 import api from '../../api/client'
+import { useLang } from '../../i18n/LangContext'
 
 const DOMAIN_META: Record<string, { icon: string; label: string; color: string; tint: string; duration: string; verb: string }> = {
   communication: { icon: '💬', label: 'Communication', color: colors.comm,   tint: colors.commTint,   duration: '10 min', verb: 'Practise talking' },
@@ -34,6 +35,7 @@ function goalsToActivities(goals: Record<string, string>): Activity[] {
 }
 
 export function ActivitiesScreen() {
+  const { t } = useLang()
   const [acts, setActs] = useState<Activity[]>([])
   const [childName, setChildName] = useState('your child')
   const [childId, setChildId] = useState<string | null>(null)
@@ -163,8 +165,8 @@ export function ActivitiesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Activities</Text>
-        <Text style={styles.sub}>Assigned by your specialist</Text>
+        <Text style={styles.heading}>{t.activities}</Text>
+        <Text style={styles.sub}>{t.activitiesSub}</Text>
 
         <Card pad={16} style={styles.summaryCard}>
           <View style={styles.summaryRow}>
@@ -172,9 +174,9 @@ export function ActivitiesScreen() {
               <Text style={styles.ringText}>{done.length}/{acts.length}</Text>
             </View>
             <View>
-              <Text style={styles.summaryTitle}>{done.length === acts.length ? 'All done today! 🎉' : 'Keep going'}</Text>
+              <Text style={styles.summaryTitle}>{done.length === acts.length ? t.allDone : t.keepGoing}</Text>
               <Text style={styles.summarySub}>
-                {todo.length} activit{todo.length === 1 ? 'y' : 'ies'} left for {childName} today
+                {todo.length} {todo.length === 1 ? t.session : t.sessions} {t.leftToday} {childName} {t.today}
               </Text>
             </View>
           </View>
@@ -182,14 +184,14 @@ export function ActivitiesScreen() {
 
         {todo.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>To do</Text>
+            <Text style={styles.sectionTitle}>{t.toDo}</Text>
             {todo.map(a => <ActivityRow key={a.id} act={a} />)}
           </View>
         )}
 
         {done.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Completed</Text>
+            <Text style={styles.sectionTitle}>{t.completed}</Text>
             {done.map(a => <ActivityRow key={a.id} act={a} />)}
           </View>
         )}
