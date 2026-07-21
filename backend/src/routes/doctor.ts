@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
+import { sendPush } from '../lib/push'
 
 const router = Router()
 
@@ -103,6 +104,20 @@ router.post('/diagnosis', async (req: AuthRequest, res: Response) => {
       data: { childId, doctorId: req.user!.id, severity, notes, carePlan },
     })
   }
+  // notify parent
+  const child = await prisma.child.findUnique({
+    where: { id: childId },
+    include: { parent: { select: { pushToken: true } } },
+  })
+  if (child?.parent?.pushToken) {
+    await sendPush(
+      child.parent.pushToken,
+      "Care plan ready 📋",
+      `Your child's care plan has been created by your specialist.`,
+      { screen: 'Plan' },
+    )
+  }
+
   res.status(201).json(diagnosis)
 })
 

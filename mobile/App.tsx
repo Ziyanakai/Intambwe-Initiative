@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -8,6 +8,7 @@ import { LangProvider } from './src/i18n/LangContext'
 
 import { useAuthStore } from './src/store/useAuthStore'
 import { colors } from './src/theme/colors'
+import { registerForPushNotifications } from './src/lib/registerPush'
 
 import { SplashScreen }      from './src/screens/SplashScreen'
 import { WelcomeScreen }     from './src/screens/WelcomeScreen'
@@ -122,6 +123,10 @@ function AuthStack() {
 
 export default function App() {
   const user = useAuthStore((s) => s.user)
+
+  useEffect(() => {
+    if (user?.role === 'PARENT') registerForPushNotifications()
+  }, [user?.id])
 
   return (
     <SafeAreaProvider>

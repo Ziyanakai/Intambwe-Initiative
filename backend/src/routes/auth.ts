@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma'
+import { authenticate, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -47,6 +48,13 @@ router.post('/login', async (req: Request, res: Response) => {
   }
   const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' })
   res.json({ token, user: { id: user.id, email: user.email, role: user.role } })
+})
+
+router.post('/push-token', authenticate, async (req: AuthRequest, res: Response) => {
+  const { token } = req.body
+  if (!token) { res.status(400).json({ error: 'token required' }); return }
+  await prisma.user.update({ where: { id: req.user!.id }, data: { pushToken: token } })
+  res.json({ ok: true })
 })
 
 export default router
