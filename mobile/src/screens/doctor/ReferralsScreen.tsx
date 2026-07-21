@@ -1,10 +1,11 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
+import { useAuthStore } from '../../store/useAuthStore'
 
 const REFERRALS = [
   { id: 'r1', name: 'Keza Ishimwe',   initials: 'KI', age: '3 yrs 2 mo', risk: 'high', score: '5 / 7 flags', when: 'Today, 09:14', parent: 'Aline Mukamana', isNew: true },
@@ -19,12 +20,27 @@ const riskTint  = { high: '#FEF0EE', mod: '#FEF9EC', low: colors.green50 }
 
 export function ReferralsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>()
+  const logout = useAuthStore((s) => s.logout)
+
+  function confirmLogout() {
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log out', style: 'destructive', onPress: logout },
+    ])
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Referrals</Text>
-        <Text style={styles.sub}>Children awaiting your review</Text>
+        <View style={styles.headingRow}>
+          <View>
+            <Text style={styles.heading}>Referrals</Text>
+            <Text style={styles.sub}>Children awaiting your review</Text>
+          </View>
+          <TouchableOpacity onPress={confirmLogout} style={styles.logoutBtn}>
+            <Text style={styles.logoutText}>🚪</Text>
+          </TouchableOpacity>
+        </View>
 
         {REFERRALS.map((r) => (
           <TouchableOpacity
@@ -66,8 +82,11 @@ export function ReferralsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   content: { padding: 18, paddingBottom: 32, gap: 10 },
+  headingRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 },
   heading: { fontSize: 24, fontWeight: '800', color: colors.ink, letterSpacing: -0.5 },
-  sub: { fontSize: 13.5, color: colors.ink2, marginBottom: 8 },
+  sub: { fontSize: 13.5, color: colors.ink2 },
+  logoutBtn: { padding: 6, marginTop: 4 },
+  logoutText: { fontSize: 22 },
   card: {},
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 46, height: 46, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },

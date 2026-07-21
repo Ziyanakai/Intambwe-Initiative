@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Card } from '../../components/Card'
 import { colors } from '../../theme/colors'
@@ -14,7 +14,15 @@ const QUICK_ACTIONS = [
 
 export function HomeScreen({ navigation }: any) {
   const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
   const firstName = user?.email?.split('@')[0] ?? 'Parent'
+
+  function confirmLogout() {
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log out', style: 'destructive', onPress: logout },
+    ])
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -29,6 +37,9 @@ export function HomeScreen({ navigation }: any) {
             <View style={styles.bellBtn}>
               <Text style={{ fontSize: 20 }}>🔔</Text>
             </View>
+            <TouchableOpacity style={styles.bellBtn} onPress={confirmLogout}>
+              <Text style={{ fontSize: 20 }}>🚪</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
