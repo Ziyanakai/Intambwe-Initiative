@@ -27,7 +27,7 @@ router.get('/', requireRole('PARENT'), async (req: AuthRequest, res: Response) =
 })
 
 router.post('/:id/activity-log', requireRole('PARENT'), async (req: AuthRequest, res: Response) => {
-  const child = await prisma.child.findFirst({ where: { id: req.params['id'], parentId: req.user!.id } })
+  const child = await prisma.child.findFirst({ where: { id: String(req.params['id']), parentId: req.user!.id } })
   if (!child) { res.status(404).json({ error: 'Child not found' }); return }
   const { exerciseType, notes } = req.body
   if (!exerciseType) { res.status(400).json({ error: 'exerciseType is required' }); return }
@@ -39,7 +39,7 @@ router.post('/:id/activity-log', requireRole('PARENT'), async (req: AuthRequest,
 
 router.get('/:id/activity-log', requireRole('PARENT', 'DOCTOR'), async (req: AuthRequest, res: Response) => {
   const logs = await prisma.therapyLog.findMany({
-    where: { childId: req.params['id'] },
+    where: { childId: String(req.params['id']) },
     orderBy: { completedAt: 'desc' },
     take: 100,
   })
@@ -47,7 +47,7 @@ router.get('/:id/activity-log', requireRole('PARENT', 'DOCTOR'), async (req: Aut
 })
 
 router.delete('/:id/activity-log/:domain', requireRole('PARENT'), async (req: AuthRequest, res: Response) => {
-  const child = await prisma.child.findFirst({ where: { id: req.params['id'], parentId: req.user!.id } })
+  const child = await prisma.child.findFirst({ where: { id: String(req.params['id']), parentId: req.user!.id } })
   if (!child) { res.status(404).json({ error: 'Child not found' }); return }
 
   const today = new Date()
@@ -56,7 +56,7 @@ router.delete('/:id/activity-log/:domain', requireRole('PARENT'), async (req: Au
   const log = await prisma.therapyLog.findFirst({
     where: {
       childId: child.id,
-      exerciseType: req.params['domain'],
+      exerciseType: String(req.params['domain']),
       completedAt: { gte: today },
     },
     orderBy: { completedAt: 'desc' },
