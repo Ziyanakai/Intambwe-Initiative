@@ -19,7 +19,7 @@ app.use(express.json())
 
 app.get('/health', async (_, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.user.count()
     res.json({ status: 'ok', db: 'connected', timestamp: new Date().toISOString() })
   } catch (err: any) {
     res.status(503).json({ status: 'error', db: 'disconnected', error: err.message })
