@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { PrismaClient } from '@prisma/client'
 
 import authRoutes from './routes/auth'
 import childrenRoutes from './routes/children'
@@ -12,11 +13,19 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const prisma = new PrismaClient()
 
 app.use(cors())
 app.use(express.json())
 
-app.get('/health', (_, res) => res.json({ status: 'ok' }))
+app.get('/health', async (_, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    res.json({ status: 'ok', db: 'connected', timestamp: new Date().toISOString() })
+  } catch (err: any) {
+    res.status(503).json({ status: 'error', db: 'disconnected', error: err.message })
+  }
+})
 
 app.use('/auth', authRoutes)
 app.use('/children', childrenRoutes)
